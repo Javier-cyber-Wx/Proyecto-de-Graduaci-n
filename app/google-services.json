@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "956779412252",
+    "project_id": "tablemath-7a10c",
+    "storage_bucket": "tablemath-7a10c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956779412252:android:567e3d51420f31e0add8d9",
+        "android_client_info": {
+          "package_name": "com.example.tablemath"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUaa-A0OAQryPrfCHjhRGb7CPb1pNbZpc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

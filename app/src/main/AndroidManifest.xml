@@ -12,6 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TableMath">
         <activity
+            android:name=".Login"
+            android:exported="false"
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.TableMath" />
+        <activity
+            android:name=".Bienvenida"
+            android:exported="false"
+            android:label="@string/title_activity_bienvenida"
+            android:theme="@style/Theme.TableMath" />
+        <activity
             android:name=".RegistroUsuario"
             android:exported="false"
             android:label="@string/title_activity_registro_usuario"

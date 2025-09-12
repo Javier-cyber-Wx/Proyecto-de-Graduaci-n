@@ -2,4 +2,6 @@
     <string name="app_name">TableMath</string>
     <string name="title_activity_menu">Menu</string>
     <string name="title_activity_registro_usuario">RegistroUsuario</string>
+    <string name="title_activity_bienvenida">Bienvenida</string>
+    <string name="title_activity_login">Login</string>
 </resources>
