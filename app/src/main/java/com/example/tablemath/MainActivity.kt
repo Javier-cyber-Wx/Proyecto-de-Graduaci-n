@@ -91,7 +91,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
             ){
                 Image(
                     painter = painterResource(id = R.drawable.numby),
-                    contentDescription = "Masxota",
+                    contentDescription = "Mascota",
                     modifier = Modifier
                         .size(120.dp)
                         .scale(scale)

@@ -30,7 +30,8 @@
             android:name=".Menu"
             android:exported="false"
             android:label="@string/title_activity_menu"
-            android:theme="@style/Theme.TableMath" />
+            android:theme="@style/Theme.TableMath"
+            tools:ignore="MissingClass" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

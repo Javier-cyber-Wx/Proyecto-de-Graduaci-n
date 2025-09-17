@@ -53,7 +53,7 @@ class Bienvenida : ComponentActivity() {
             TableMathTheme {
                 WelcomeScreen(
                     onRegisterClick = {
-                        startActivity(Intent(this, RegistroUsuario::class.java))
+                        startActivity(Intent(this, Menu::class.java))
                     },
                     onLoginClick = {
                         startActivity(Intent(this, Login::class.java))
@@ -70,7 +70,7 @@ fun NumbyAnimado()
         R.drawable.numby_animation_1, R.drawable.numby_animation_2, R.drawable.numby_animation_3
     )
     val hablaFrame = listOf(
-        R.drawable.animacion_boca_1, R.drawable.animacion_boca_2, R.drawable.animacion_boca_3
+        R.drawable.animboca_1, R.drawable.animboca_2, R.drawable.animboca_3, R.drawable.animboca_4
     )
     var currentSaludoFrame by remember { mutableStateOf(0) }
     var enSaludo by remember { mutableStateOf(true) }
