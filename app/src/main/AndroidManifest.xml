@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".MyApplication.MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -12,30 +13,49 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TableMath">
         <activity
-            android:name=".Login"
+            android:name=".ui.screens.exercises.Arabe"
+            android:exported="false"
+            android:label="@string/title_activity_arabe"
+            android:theme="@style/Theme.TableMath" />
+        <activity
+            android:name=".ui.screens.exercises.Japones"
+            android:exported="false"
+            android:label="@string/title_activity_japones"
+            android:theme="@style/Theme.TableMath" />
+        <activity
+            android:name=".ui.screens.exercises.Ruso"
+            android:exported="false"
+            android:label="@string/title_activity_ruso"
+            android:theme="@style/Theme.TableMath" />
+        <activity
+            android:name=".ui.screens.exercises.Clasico"
+            android:exported="false"
+            android:label="@string/title_activity_tradicional"
+            android:theme="@style/Theme.TableMath" />
+        <activity
+            android:name=".ui.screens.Login"
             android:exported="false"
             android:label="@string/title_activity_login"
             android:theme="@style/Theme.TableMath" />
         <activity
-            android:name=".Bienvenida"
+            android:name=".ui.screens.Bienvenida"
             android:exported="false"
             android:label="@string/title_activity_bienvenida"
             android:theme="@style/Theme.TableMath" />
         <activity
-            android:name=".RegistroUsuario"
+            android:name=".ui.screens.RegistroUsuario"
             android:exported="false"
             android:label="@string/title_activity_registro_usuario"
             android:theme="@style/Theme.TableMath" />
         <activity
-            android:name=".Menu"
+            android:name=".ui.screens.Menu"
             android:exported="false"
             android:label="@string/title_activity_menu"
             android:theme="@style/Theme.TableMath"
             tools:ignore="MissingClass" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.screens.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.TableMath">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

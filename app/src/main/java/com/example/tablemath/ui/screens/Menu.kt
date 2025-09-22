@@ -1,9 +1,10 @@
-package com.example.tablemath
+package com.example.tablemath.ui.screens
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,31 +20,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.tablemath.Login
 import com.example.tablemath.R
-import com.example.tablemath.RegistroUsuario
+import com.example.tablemath.ui.screens.exercises.Arabe
 import com.example.tablemath.ui.theme.TableMathTheme
+import com.example.tablemath.ui.screens.exercises.Clasico
+import com.example.tablemath.ui.screens.exercises.Ruso
+
 class Menu : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             TableMathTheme {
-                // 📌 Aquí llamamos al menú principal
                 MainMenuScreen(
                     onMetodoClick = { metodo ->
                         when (metodo) {
-                            "Tradicional" -> {
-                                startActivity(Intent(this, Login::class.java))
+                            "Clasico" -> {
+                                startActivity(Intent(this, Clasico::class.java))
                             }
                             "Ruso" -> {
-                                startActivity(Intent(this, RegistroUsuario::class.java))
+                                startActivity(Intent(this, Ruso::class.java))
                             }
                             "Japones" -> {
                                 startActivity(Intent(this, Login::class.java))
                             }
                             "Arabe" -> {
-                                startActivity(Intent(this, RegistroUsuario::class.java))
+                                startActivity(Intent(this, Arabe::class.java))
                             }
                         }
                     },
@@ -60,8 +62,6 @@ class Menu : ComponentActivity() {
         }
     }
 }
-
-
 @Composable
 fun MainMenuScreen(
     onMetodoClick: (String) -> Unit,
@@ -81,7 +81,7 @@ fun MainMenuScreen(
         ) {
             // Título de la App
             Text(
-                text = "¡Elige tu camino con Numby!",
+                text = "¡Elige el metodo que quieras!",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -93,15 +93,15 @@ fun MainMenuScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 MenuOption(
-                    text = "Tradicional",
+                    text = "Clasico",
                     color = Color(0xFFFFC107),
                     iconRes = R.drawable.ic_tradicional,
-                    onClick = { onMetodoClick("Tradicional") }
+                    onClick = { onMetodoClick("Clasico") }
                 )
                 MenuOption(
                     text = "Ruso",
-                    color = Color(0xFF4CAF50),
-                    iconRes = R.drawable.ic_ruso,
+                    color = Color(0xFFB0BEC5),
+                    iconRes = R.drawable.flag_rusia,
                     onClick = { onMetodoClick("Ruso") }
                 )
             }
@@ -113,13 +113,13 @@ fun MainMenuScreen(
                 MenuOption(
                     text = "Japonés",
                     color = Color(0xFFE91E63),
-                    iconRes = R.drawable.ic_japones,
+                    iconRes = R.drawable.flag_japon,
                     onClick = { onMetodoClick("Japones") }
                 )
                 MenuOption(
                     text = "Árabe",
-                    color = Color(0xFF9C27B0),
-                    iconRes = R.drawable.ic_arabe,
+                    color = Color(0xFF2E7D32),
+                    iconRes = R.drawable.flag_arabia,
                     onClick = { onMetodoClick("Arabe") }
                 )
             }
@@ -163,10 +163,9 @@ fun MenuOption(text: String, color: Color, iconRes: Int, onClick: () -> Unit) {
                 .background(color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
+            Image(
                 painter = painterResource(id = iconRes),
                 contentDescription = text,
-                tint = Color.White,
                 modifier = Modifier.size(50.dp)
             )
         }
@@ -174,7 +173,7 @@ fun MenuOption(text: String, color: Color, iconRes: Int, onClick: () -> Unit) {
         Text(text, fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
     }
 }
-@Preview(showBackground = true, showSystemUi = true, name = "Preview Menu Activity")
+/*@Preview(showBackground = true, showSystemUi = true, name = "Preview Menu Activity")
 @Composable
 fun MenuActivityPreview() {
     TableMathTheme {
@@ -191,5 +190,5 @@ fun MenuActivityPreview() {
             }
         )
     }
-}
+}*/
 

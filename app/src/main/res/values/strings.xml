@@ -4,4 +4,9 @@
     <string name="title_activity_registro_usuario">RegistroUsuario</string>
     <string name="title_activity_bienvenida">Bienvenida</string>
     <string name="title_activity_login">Login</string>
+    <string name="title_activity_tradicional">Tradicional</string>
+    <string name="title_activity_ruso">Ruso</string>
+    <string name="title_activity_japones">Japones</string>
+    <string name="title_activity_arabe">Arabe</string>
+    <string name="title_activity_exercise">ExerciseActivity</string>
 </resources>
