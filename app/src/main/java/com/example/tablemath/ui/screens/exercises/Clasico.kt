@@ -1,29 +1,33 @@
 package com.example.tablemath.ui.screens.exercises
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tablemath.ui.screens.exercises.models.Ejercicios
-import com.example.tablemath.ui.screens.exercises.models.Escalera
 import com.example.tablemath.ui.screens.exercises.models.Tablero
 import com.example.tablemath.ui.screens.exercises.ui.theme.TableMathTheme
 import com.google.firebase.Firebase
@@ -32,23 +36,27 @@ import com.google.firebase.auth.auth
 class Clasico : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
         // Obtener dinámicamente el UID del usuario logueado
         val estudianteId = Firebase.auth.currentUser?.uid
-
+        enableEdgeToEdge()
         setContent {
             TableMathTheme {
                 var tablaSeleccionada by remember { mutableStateOf<Int?>(null) }
-
-                Scaffold { innerPadding ->
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                        .padding(WindowInsets.systemBars.asPaddingValues()), // respeta los insets
+                    color = Color.White
+                ) {
                     Column(
-                        modifier = Modifier
+                        modifier = Modifier.fillMaxSize()
                             .fillMaxSize()
-                            .padding(innerPadding)
-                            .padding(16.dp)
-                    ) {
-                        if (tablaSeleccionada == null) {
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ){
+                        if(tablaSeleccionada == null){
                             Text(
                                 text = "Método: Clásico",
                                 fontSize = 26.sp,
@@ -64,7 +72,7 @@ class Clasico : ComponentActivity() {
                             Tablero().LadderScreen("Clásico") { numero ->
                                 tablaSeleccionada = numero
                             }
-                        } else {
+                        } else{
                             estudianteId?.let { id ->
                                 Ejercicios().ExerciseScreen(
                                     metodo = "clasico",

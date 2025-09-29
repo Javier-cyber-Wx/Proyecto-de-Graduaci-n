@@ -34,12 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tablemath.domain.EstudianteRepository
 import com.example.tablemath.ui.theme.TableMathTheme
-import com.example.tablemath.data.model.Estudiante
 
 class Login : ComponentActivity() {
     private lateinit var repository: EstudianteRepository
@@ -81,7 +79,6 @@ class Login : ComponentActivity() {
         }
     }
 }
-
 @Composable
 fun LoginScreen(
     onLoginClick: (String) -> Unit

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,53 +38,58 @@ class Tablero {
         metodo: String,
         onStepClick: (Int) -> Unit,
     ) {
-        val steps = (1..10).map {Escalera(it)}
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        ){
-            Image(
-                painter = painterResource(id = com.example.tablemath.R.drawable.serpiente),
-                contentDescription = "Serpierte",
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .size(255.dp)
-            )
-            Image(
-                painter = painterResource(id = com.example.tablemath.R.drawable.escalera),
-                contentDescription = "Escalera",
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(260.dp)
-                    .graphicsLayer(
-                        rotationZ = -30f
-                    )
-            )
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ){
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color.White
+        ) {
+            val steps = (1..10).map { Escalera(it) }
+
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Image(
+                    painter = painterResource(id = com.example.tablemath.R.drawable.serpiente),
+                    contentDescription = "Serpierte",
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .size(255.dp)
+                )
+                Image(
+                    painter = painterResource(id = com.example.tablemath.R.drawable.escalera),
+                    contentDescription = "Escalera",
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(260.dp)
+                        .graphicsLayer(
+                            rotationZ = -30f
+                        )
+                )
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    items(9) { index ->
-                        val step = Escalera(index + 1, completar = false)
-                        LadderBox(step, metodo) {
-                            onStepClick(step.numero)
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(9) { index ->
+                            val step = Escalera(index + 1, completar = false)
+                            LadderBox(step, metodo) {
+                                onStepClick(step.numero)
+                            }
                         }
                     }
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-                LadderBox(Escalera(10, completar = false), metodo) {
-                    onStepClick(10)
+                    Spacer(modifier = Modifier.height(24.dp))
+                    LadderBox(Escalera(10, completar = false), metodo) {
+                        onStepClick(10)
+                    }
                 }
             }
         }
     }
+
     @Composable
     fun LadderBox(step: Escalera, metodo: String, onClick: () -> Unit) {
         val colors = listOf(

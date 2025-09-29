@@ -24,6 +24,7 @@ import com.example.tablemath.R
 import com.example.tablemath.ui.screens.exercises.Arabe
 import com.example.tablemath.ui.theme.TableMathTheme
 import com.example.tablemath.ui.screens.exercises.Clasico
+import com.example.tablemath.ui.screens.exercises.Japones
 import com.example.tablemath.ui.screens.exercises.Ruso
 
 class Menu : ComponentActivity() {
@@ -42,7 +43,7 @@ class Menu : ComponentActivity() {
                                 startActivity(Intent(this, Ruso::class.java))
                             }
                             "Japones" -> {
-                                startActivity(Intent(this, Login::class.java))
+                                startActivity(Intent(this, Japones::class.java))
                             }
                             "Arabe" -> {
                                 startActivity(Intent(this, Arabe::class.java))
