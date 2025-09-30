@@ -2,7 +2,6 @@ package com.example.tablemath.ui.screens.exercises.models
 
 import android.widget.Space
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +20,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,7 +32,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 
 class Tablero {
     @Composable
@@ -43,10 +44,27 @@ class Tablero {
             color = Color.White
         ) {
             val steps = (1..10).map { Escalera(it) }
-
+            val tablaCompletada = steps.all { it.completar }
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
+                if (tablaCompletada) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .align(Alignment.TopCenter),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🎉 ¡Has completado toda la tabla!",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF4CAF50)
+                        )
+                    }
+                }
+
                 Image(
                     painter = painterResource(id = com.example.tablemath.R.drawable.serpiente),
                     contentDescription = "Serpierte",

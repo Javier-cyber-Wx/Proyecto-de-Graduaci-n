@@ -1,10 +1,14 @@
 package com.example.tablemath.ui.screens.exercises.models
 
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +21,13 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -36,12 +44,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.delay
+import kotlin.math.max
 
 class Ejercicios_ra {
     @Composable
@@ -101,6 +114,7 @@ class Ejercicios_ra {
             Text(text = mensaje, color = Color.Red, fontSize = 18.sp)
         } else {
             val progreso = (currentIndex + 1).toFloat() / ejercicios.size.toFloat()
+            val context = LocalContext.current
 
             JapaneseExercise(
                 a = a,
@@ -114,6 +128,12 @@ class Ejercicios_ra {
                         a = (siguiente["a"] as Long).toInt()
                         b = (siguiente["b"] as Long).toInt()
                     } else {
+                        val mediaPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.correcto)
+                        mediaPlayer.start()
+                        // Esperar a que termine el sonido antes de liberar recursos
+                        mediaPlayer.setOnCompletionListener {
+                            it.release()
+                        }
                         onFinish()
                     }
                 }
@@ -133,13 +153,15 @@ class Ejercicios_ra {
         var visibleCount by remember { mutableStateOf(0) }
 
         val totalIntersections = a * b
+
+        // Animación de aparición de intersecciones
         LaunchedEffect(a, b) {
             userInput = ""
             message = ""
             correct = false
             visibleCount = 0
             for (i in 1..totalIntersections) {
-                delay(200)
+                delay(150)
                 visibleCount = i
             }
         }
@@ -147,10 +169,85 @@ class Ejercicios_ra {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- Barra de progreso estilo Duolingo ---
+            val maxLines = max(a, b)
+            val canvasHeight = (maxLines * 40).dp
+            val scale = remember { mutableStateOf(1f) }
+            val offset = remember { mutableStateOf(Offset.Zero) }
+
+            val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
+                scale.value = (scale.value * zoomChange).coerceIn(0.5f, 3f) // límites de zoom
+                offset.value += panChange
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(canvasHeight)
+                    .transformable(state = transformableState)
+                    .background(Color.White)
+                    .clip(RoundedCornerShape(8.dp))
+                    .border(1.dp, Color.LightGray)
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer(
+                            scaleX = scale.value,
+                            scaleY = scale.value,
+                            translationX = offset.value.x,
+                            translationY = offset.value.y
+                        )
+                ) {
+                    val topMargin = 40f
+                    val bottomMargin = 40f
+                    val pointRadius = 5f
+
+                    val availableHeight = size.height - topMargin - bottomMargin
+
+                    val spacingA = (availableHeight - 2 * pointRadius) / a
+                    val spacingB = (availableHeight - 2 * pointRadius) / b
+
+                    val lineA = mutableListOf<Pair<Offset, Offset>>()
+                    val lineB = mutableListOf<Pair<Offset, Offset>>()
+
+                    // Líneas ↘ (azules)
+                    for (i in 1..a) {
+                        val y = topMargin + i * spacingA
+                        val start = Offset(0f, y)
+                        val end = Offset(size.width, y - size.width)
+                        lineA.add(start to end)
+                        drawLine(color = Color(0xFF2196F3), start = start, end = end, strokeWidth = 4f)
+                    }
+
+                    // Líneas ↙ (rojas)
+                    for (j in 1..b) {
+                        val y = topMargin + j * spacingB
+                        val start = Offset(size.width, y)
+                        val end = Offset(0f, y - size.width)
+                        lineB.add(start to end)
+                        drawLine(color = Color(0xFFF44336), start = start, end = end, strokeWidth = 4f)
+                    }
+
+                    // Puntos de intersección animados
+                    var index = 0
+                    for ((startA, endA) in lineA) {
+                        for ((startB, endB) in lineB) {
+                            val intersection = getLineIntersection(startA, endA, startB, endB)
+                            if (intersection != null && index < visibleCount) {
+                                drawCircle(color = Color.Black, radius = pointRadius, center = intersection)
+                            }
+                            index++
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Barra de progreso debajo del canvas ---
             LinearProgressIndicator(
                 progress = progreso,
                 modifier = Modifier
@@ -161,39 +258,20 @@ class Ejercicios_ra {
                 trackColor = Color(0xFFE1BEE7)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // --- Título debajo de la barra ---
             Text(
                 text = "Método Japonés: $a × $b",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF6C1AEF)
             )
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Grilla de cruces ✖ ---
-            Column {
-                for (i in 0 until a) {
-                    Row(horizontalArrangement = Arrangement.Center) {
-                        for (j in 0 until b) {
-                            val index = i * b + j
-                            AnimatedVisibility(visible = index < visibleCount) {
-                                Text(
-                                    text = "✖",
-                                    fontSize = 32.sp,
-                                    modifier = Modifier.padding(4.dp),
-                                    color = Color(0xFFFF4081)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
+            // --- Input y botones ---
             if (!correct) {
-                // --- Input de respuesta ---
                 OutlinedTextField(
                     value = userInput,
                     onValueChange = { userInput = it },
@@ -202,14 +280,26 @@ class Ejercicios_ra {
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
+                val context = LocalContext.current
                 Button(
                     onClick = {
                         if (userInput.toIntOrNull() == totalIntersections) {
                             message = "🎉 ¡Correcto!"
                             correct = true
+                            val aciertoPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.finalizada)
+                            aciertoPlayer.start()
+                            // Esperar a que termine el sonido antes de liberar recursos
+                            aciertoPlayer.setOnCompletionListener {
+                                it.release()
+                            }
                         } else {
                             message = "❌ Intenta de nuevo"
+                            val errorPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.error)
+                            errorPlayer.start()
+                            // Esperar a que termine el sonido antes de liberar recursos
+                            errorPlayer.setOnCompletionListener {
+                                it.release()
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6C1AEF))
@@ -217,7 +307,7 @@ class Ejercicios_ra {
                     Text("Comprobar", color = Color.White)
                 }
             } else {
-                // --- Botón para continuar ---
+                val context = LocalContext.current
                 Button(
                     onClick = { onFinish() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
@@ -237,6 +327,19 @@ class Ejercicios_ra {
                 )
             }
         }
+    }
+    // --- Función auxiliar para calcular intersecciones ---
+    fun getLineIntersection(
+        p1: Offset, p2: Offset,
+        p3: Offset, p4: Offset
+    ): Offset? {
+        val denom = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x)
+        if (denom == 0f) return null
+        val x = ((p1.x * p2.y - p1.y * p2.x) * (p3.x - p4.x) -
+                (p1.x - p2.x) * (p3.x * p4.y - p3.y * p4.x)) / denom
+        val y = ((p1.x * p2.y - p1.y * p2.x) * (p3.y - p4.y) -
+                (p1.y - p2.y) * (p3.x * p4.y - p3.y * p4.x)) / denom
+        return Offset(x, y)
     }
     @Composable
     fun ArabicExerciseScreen(
@@ -295,6 +398,8 @@ class Ejercicios_ra {
             Text(text = mensaje, color = Color.Red, fontSize = 18.sp)
         } else {
             // --- Ejercicio paso a paso ---
+            val context = LocalContext.current
+
             ArabicStepByStep(
                 a = a,
                 b = b,
@@ -307,6 +412,12 @@ class Ejercicios_ra {
                         b = (siguiente["b"] as Long).toInt()
                     } else {
                         // Todos los ejercicios completados
+                        val mediaPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.correcto)
+                        mediaPlayer.start()
+                        // Esperar a que termine el sonido antes de liberar recursos
+                        mediaPlayer.setOnCompletionListener {
+                            it.release()
+                        }
                         onFinish()
                     }
                 }
@@ -319,22 +430,33 @@ class Ejercicios_ra {
         b: Int,
         onFinish: () -> Unit
     ) {
-        val totalCells = a * b
+        val aDigits = a.toString().map { it.toString().toInt() }
+        val bDigits = b.toString().map { it.toString().toInt() }
+
+        val totalCells = aDigits.size * bDigits.size
+        val decenas = Array(bDigits.size) { IntArray(aDigits.size) }
+        val unidades = Array(bDigits.size) { IntArray(aDigits.size) }
+
         var showCells by remember { mutableStateOf(0) }
         var showDiagonals by remember { mutableStateOf(false) }
+        var highlightedDiagonal by remember { mutableStateOf(-1) }
         var resultadoInput by remember { mutableStateOf("") }
         var correcto by remember { mutableStateOf(false) }
         var mensaje by remember { mutableStateOf("") }
+        var resultadoFinal by remember { mutableStateOf("") }
+        var celdaActiva by remember { mutableStateOf<Pair<Int, Int>?>(null) }
 
         // Animación paso a paso
         LaunchedEffect(a, b) {
             showCells = 0
             showDiagonals = false
+            highlightedDiagonal = -1
             resultadoInput = ""
             correcto = false
             mensaje = ""
+            resultadoFinal = ""
+            celdaActiva = null
 
-            // Mostrar cada celda
             for (i in 1..totalCells) {
                 delay(200)
                 showCells = i
@@ -342,10 +464,41 @@ class Ejercicios_ra {
 
             delay(300)
             showDiagonals = true
+
+            val totalColumns = aDigits.size
+            val totalRows = bDigits.size
+            val diagonalCount = totalColumns + totalRows
+            val diagonals = IntArray(diagonalCount) { 0 }
+
+            for (i in 0 until totalRows) {
+                for (j in 0 until totalColumns) {
+                    val multiplicando = aDigits[j]
+                    val multiplicador = bDigits[i]
+                    val producto = multiplicando * multiplicador
+                    val decena = producto / 10
+                    val unidad = producto % 10
+
+                    decenas[i][j] = decena
+                    unidades[i][j] = unidad
+
+                    val diagonalIndex = i + j
+                    diagonals[diagonalIndex] += unidad
+                    if (diagonalIndex - 1 >= 0) {
+                        diagonals[diagonalIndex - 1] += decena
+                    }
+                }
+            }
+
+            for (d in diagonals.indices) {
+                highlightedDiagonal = d
+                delay(500)
+            }
+            highlightedDiagonal = -1
+
+            resultadoFinal = diagonals.reversed().fold(0) { acc, value -> acc * 10 + value }.toString()
         }
 
-        val producto = a * b
-        val progreso by remember { derivedStateOf { (showCells.toFloat() / totalCells) } }
+        val progreso by remember { derivedStateOf { showCells.toFloat() / totalCells } }
 
         Column(
             modifier = Modifier
@@ -354,13 +507,8 @@ class Ejercicios_ra {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Método Árabe (Celosía): $a × $b",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Método Árabe (Celosía): $a × $b", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
-            // Barra de progreso
             LinearProgressIndicator(
                 progress = progreso.coerceIn(0f, 1f),
                 modifier = Modifier
@@ -369,24 +517,72 @@ class Ejercicios_ra {
                 color = Color(0xFF6C1AEF),
                 trackColor = Color.LightGray
             )
-            Spacer(modifier = Modifier.height(16.dp))
 
-            // Cuadrícula real
             Column {
+                // Fila superior con los dígitos de 'a'
+                Row(modifier = Modifier.padding(start = 60.dp)) {
+                    for (digit in aDigits) {
+                        Box(
+                            modifier = Modifier
+                                .size(60.dp)
+                                .background(Color(0xFFE0F7FA)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = digit.toString(),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF00796B)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Cuadrícula con columna izquierda
                 var cellIndex = 0
-                for (i in 0 until a) {
+                for (i in bDigits.indices) {
                     Row {
-                        for (j in 0 until b) {
+                        // Dígito de 'b' al inicio de la fila
+                        Box(
+                            modifier = Modifier
+                                .size(60.dp)
+                                .background(Color(0xFFE0F7FA)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = bDigits[i].toString(),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF00796B)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        // Celdas de la cuadrícula
+                        for (j in aDigits.indices) {
+                            val multiplicando = aDigits[j]
+                            val multiplicador = bDigits[i]
+                            val producto = multiplicando * multiplicador
+                            val decena = producto / 10
+                            val unidad = producto % 10
+                            val diagonalIndex = i + j
+                            val isHighlighted = highlightedDiagonal == diagonalIndex || highlightedDiagonal == diagonalIndex - 1
+                            val diagonalColor = if (isHighlighted) Color(0xFFFFC107) else Color.Gray
+
                             Box(
                                 modifier = Modifier
                                     .size(60.dp)
-                                    .border(1.dp, Color.Black),
+                                    .border(2.dp, Color.Black)
+                                    .background(Color(0xFFF3F3F3))
+                                    .clickable { celdaActiva = i to j },
                                 contentAlignment = Alignment.Center
                             ) {
-                                // Dibujar diagonal
                                 Canvas(modifier = Modifier.fillMaxSize()) {
                                     drawLine(
-                                        color = Color.Gray,
+                                        color = diagonalColor,
                                         start = Offset(0f, 0f),
                                         end = Offset(size.width, size.height),
                                         strokeWidth = 2f
@@ -394,20 +590,17 @@ class Ejercicios_ra {
                                 }
 
                                 if (cellIndex < showCells) {
-                                    // Producto en la celda
                                     Box(modifier = Modifier.fillMaxSize()) {
-                                        // Decena
                                         Text(
-                                            text = "0",
-                                            color = Color.Blue,
+                                            text = decena.toString(),
+                                            color = Color(0xFF1976D2),
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 14.sp,
                                             modifier = Modifier.align(Alignment.TopStart).padding(2.dp)
                                         )
-                                        // Unidad
                                         Text(
-                                            text = "1",
-                                            color = Color.Red,
+                                            text = unidad.toString(),
+                                            color = Color(0xFFD32F2F),
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.sp,
                                             modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp)
@@ -417,24 +610,48 @@ class Ejercicios_ra {
 
                                 cellIndex++
                             }
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                         }
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                 }
             }
 
-            // Suma de diagonales
-            if (showDiagonals) {
-                Text(
-                    text = "Suma de diagonales = $producto",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4CAF50)
-                )
+            // Tarjeta explicativa por celda
+            celdaActiva?.let { (i, j) ->
+                val multiplicando = aDigits[j]
+                val multiplicador = bDigits[i]
+                val producto = multiplicando * multiplicador
+                val decena = producto / 10
+                val unidad = producto % 10
+                val diagonalActual = i + j
+                val diagonalAnterior = diagonalActual - 1
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("📦 Celda seleccionada: fila $i, columna $j", fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(4.dp))
+                        Text("🔢 Cálculo: $multiplicando × $multiplicador = $producto")
+                        Text("🔷 Decena: $decena → va a la diagonal $diagonalAnterior")
+                        Text("🔴 Unidad: $unidad → va a la diagonal $diagonalActual")
+                        Spacer(Modifier.height(8.dp))
+                        Text("🧠 Esta celda contribuye al resultado final sumando en dos diagonales.")
+                    }
+                }
             }
 
-            // Input del resultado final
+            // Explicación general
+            if (showDiagonals) {
+                Text("🔍 Observa cómo cada diagonal recoge decenas y unidades.", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color(0xFF6C1AEF))
+                Text("Las decenas van a la diagonal anterior, las unidades a la actual.", fontSize = 14.sp, color = Color.DarkGray)
+            }
+
+            // Input del usuario
             if (showDiagonals && !correcto) {
                 OutlinedTextField(
                     value = resultadoInput,
@@ -443,14 +660,26 @@ class Ejercicios_ra {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                val context = LocalContext.current
                 Button(
                     onClick = {
-                        if (resultadoInput.toIntOrNull() == producto) {
+                        if (resultadoInput.toIntOrNull() == a * b) {
                             correcto = true
-                            mensaje = "🎉 ¡Correcto! $a × $b = $producto"
+                            mensaje = "🎉 ¡Correcto! $a × $b = ${a * b}"
+                            val aciertoPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.finalizada)
+                            aciertoPlayer.start()
+                            // Esperar a que termine el sonido antes de liberar recursos
+                            aciertoPlayer.setOnCompletionListener {
+                                it.release()
+                            }
                         } else {
                             mensaje = "❌ Intenta de nuevo"
+                            val errorPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.error)
+                            errorPlayer.start()
+                            // Esperar a que termine el sonido antes de liberar recursos
+                            errorPlayer.setOnCompletionListener {
+                                it.release()
+                            }
                         }
                     },
                     enabled = !correcto,
@@ -459,7 +688,6 @@ class Ejercicios_ra {
                     Text("Verificar", color = Color.White)
                 }
             }
-
             if (correcto) {
                 Button(
                     onClick = { onFinish() },

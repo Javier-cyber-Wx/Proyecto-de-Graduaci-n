@@ -1,7 +1,8 @@
 package com.example.tablemath.ui.screens.exercises.models
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
+import android.media.MediaPlayer
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -20,7 +21,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +60,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.ui.draw.clip
+import androidx.media3.common.Player
+import com.example.tablemath.R
 import kotlin.math.ceil
 import kotlin.math.log2
 import kotlin.math.max
@@ -73,19 +75,16 @@ class Ejercicios {
         onFinish: () -> Unit
     ) {
         val db = Firebase.firestore
-
         var ejercicios by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
         var currentIndex by remember { mutableStateOf(0) }
         var respuestaUsuario by remember { mutableStateOf("") }
         var mensaje by remember { mutableStateOf("") }
         var cargando by remember { mutableStateOf(true) }
         var respuestaCorrecta by remember { mutableStateOf(false) }
-
         val colorPrimario = Color(0xFF6C1AEF)
         val colorCorrecto = Color(0xFF4CAF50)
         val colorError = Color(0xFFE57373)
         val colorFeedback = Color(0xFFFFC107)
-
         // Animación del color del feedback
         val mensajeColor by animateColorAsState(
             targetValue = when {
@@ -95,7 +94,6 @@ class Ejercicios {
             },
             animationSpec = tween(500)
         )
-
         LaunchedEffect(Unit) {
             db.collection("ejercicios")
                 .document("clasico")
@@ -122,7 +120,6 @@ class Ejercicios {
                     cargando = false
                 }
         }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -159,13 +156,19 @@ class Ejercicios {
                     textStyle = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Medium)
                 )
                 Spacer(modifier = Modifier.height(20.dp))
-
                 // 🔹 Botón verificar
+                val context = LocalContext.current
                 Button(
                     onClick = {
                         if (respuestaUsuario.toIntOrNull() == respuestaCorrectaEsperada) {
                             mensaje = "🎉 ¡Correcto! Muy bien"
                             respuestaCorrecta = true
+                            val aciertoPlayer = MediaPlayer.create(context, R.raw.finalizada)
+                            aciertoPlayer.start()
+                            // Esperar a que termine el sonido antes de liberar recursos
+                            aciertoPlayer.setOnCompletionListener {
+                                it.release()
+                            }
 
                             // Guardar progreso
                             val progreso = hashMapOf(
@@ -177,6 +180,12 @@ class Ejercicios {
                             db.collection("progreso").add(progreso)
                         } else {
                             mensaje = "❌ Intenta de nuevo 😅"
+                            val errorPlayer = MediaPlayer.create(context, R.raw.error)
+                            errorPlayer.start()
+                            // Esperar a que termine el sonido antes de liberar recursos
+                            errorPlayer.setOnCompletionListener {
+                                it.release()
+                            }
                         }
                     },
                     enabled = !respuestaCorrecta,
@@ -188,9 +197,7 @@ class Ejercicios {
                 ) {
                     Text("Verificar", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 // 🔹 Feedback
                 if (mensaje.isNotEmpty()) {
                     Card(
@@ -208,8 +215,6 @@ class Ejercicios {
                         )
                     }
                 }
-
-                // 🔹 Botón siguiente
                 if (respuestaCorrecta) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
@@ -220,6 +225,12 @@ class Ejercicios {
                                 mensaje = ""
                                 respuestaCorrecta = false
                             } else {
+                                val mediaPlayer = MediaPlayer.create(context, R.raw.correcto)
+                                mediaPlayer.start()
+                                // Esperar a que termine el sonido antes de liberar recursos
+                                mediaPlayer.setOnCompletionListener {
+                                    it.release()
+                                }
                                 mensaje = "🏆 ¡Terminaste la tabla $tabla!"
                                 onFinish()
                             }
@@ -243,7 +254,6 @@ class Ejercicios {
         onFinish: () -> Unit
     ) {
         val db = Firebase.firestore
-
         // --- Estados ---
         var ejercicios by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
         var currentIndex by remember { mutableStateOf(0) }
@@ -262,10 +272,10 @@ class Ejercicios {
         var esperandoResultadoFinal by remember { mutableStateOf(false) }
         var respuestaCorrecta by remember { mutableStateOf(false) }
 
-        val colorPrimario = Color(0xFF6C1AEF)
-        val colorCorrecto = Color(0xFF4CAF50)
+        val colorPrimario = Color(0xFF1E88E5)
+        val colorCorrecto = Color(0xFF43A047)
         val colorError = Color.Red
-        val colorFondo = Color(0xFFF3E5F5)
+        val colorFondo = Color.White
         val colorBoton = Color(0xFFFFC107)
 
         // --- Cargar ejercicios ---
@@ -338,7 +348,7 @@ class Ejercicios {
                             modifier = Modifier.padding(12.dp),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color.White
+                            color = Color.Black
                         )
                     }
                 }
@@ -392,7 +402,7 @@ class Ejercicios {
                         colors = ButtonDefaults.buttonColors(containerColor = colorPrimario),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Verificar paso", color = Color.White, fontSize = 20.sp)
+                        Text("Verificar paso", color = Color.Black, fontSize = 20.sp)
                     }
                 } else {
                     // --- Resultado final ---
@@ -403,13 +413,19 @@ class Ejercicios {
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-
+                    val context = LocalContext.current
                     Button(
                         onClick = {
+
                             if (resultadoInput.toIntOrNull() == resultadoFinal) {
                                 mensaje = "🎉 ¡Correcto! Resultado = $resultadoFinal"
                                 respuestaCorrecta = true
-
+                                val aciertoPlayer = MediaPlayer.create(context, R.raw.finalizada)
+                                aciertoPlayer.start()
+                                // Esperar a que termine el sonido antes de liberar recursos
+                                aciertoPlayer.setOnCompletionListener {
+                                    it.release()
+                                }
                                 val progreso = hashMapOf(
                                     "id_alumno" to estudianteId,
                                     "id_ejercicio" to "ruso_tabla${tabla}_$currentIndex",
@@ -419,6 +435,12 @@ class Ejercicios {
                                 db.collection("progreso").add(progreso)
                             } else {
                                 mensaje = "❌ Resultado incorrecto"
+                                val errorPlayer = MediaPlayer.create(context, R.raw.error)
+                                errorPlayer.start()
+                                // Esperar a que termine el sonido antes de liberar recursos
+                                errorPlayer.setOnCompletionListener {
+                                    it.release()
+                                }
                             }
                         },
                         enabled = !respuestaCorrecta,
@@ -446,17 +468,23 @@ class Ejercicios {
                                     respuestaCorrecta = false
                                     mensaje = ""
                                 } else {
+                                    val mediaPlayer = MediaPlayer.create(context, R.raw.correcto)
+                                    mediaPlayer.start()
+                                    // Esperar a que termine el sonido antes de liberar recursos
+                                    mediaPlayer.setOnCompletionListener {
+                                        it.release()
+                                    }
+                                    mensaje = "🏆 ¡Terminaste la tabla $tabla!"
                                     onFinish()
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = colorCorrecto),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Siguiente ejercicio", color = Color.White, fontSize = 20.sp)
+                            Text("Siguiente ejercicio", color = Color.Black, fontSize = 20.sp)
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
                 if (mensaje.isNotEmpty()) {
                     Text(

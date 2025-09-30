@@ -75,6 +75,7 @@ dependencies {
     implementation libs.animation.core
     implementation libs.ui.text
     implementation libs.androidx.compose.foundation.foundation
+    implementation libs.androidx.media3.common.ktx
 
     // --- Testing ---
     testImplementation libs.junit

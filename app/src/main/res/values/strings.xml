@@ -9,4 +9,6 @@
     <string name="title_activity_japones">Japones</string>
     <string name="title_activity_arabe">Arabe</string>
     <string name="title_activity_exercise">ExerciseActivity</string>
+    <string name="title_activity_progreso">Progreso</string>
+    <string name="title_activity_perfil">Perfil</string>
 </resources>

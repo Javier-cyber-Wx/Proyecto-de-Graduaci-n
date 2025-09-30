@@ -52,7 +52,7 @@ class Menu : ComponentActivity() {
                     },
                     onProgresoClick = {
                         // Navegar a la pantalla de progreso
-                        // startActivity(Intent(this, ProgresoActivity::class.java))
+                        startActivity(Intent(this, Progreso::class.java))
                     },
                     onPerfilClick = {
                         // Navegar a la pantalla de perfil

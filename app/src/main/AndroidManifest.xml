@@ -13,6 +13,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TableMath">
         <activity
+            android:name=".ui.screens.Perfil"
+            android:exported="false"
+            android:label="@string/title_activity_perfil"
+            android:theme="@style/Theme.TableMath" />
+        <activity
+            android:name=".ui.screens.Progreso"
+            android:exported="false"
+            android:label="@string/title_activity_progreso"
+            android:theme="@style/Theme.TableMath" />
+        <activity
             android:name=".ui.screens.exercises.Arabe"
             android:exported="false"
             android:label="@string/title_activity_arabe"
