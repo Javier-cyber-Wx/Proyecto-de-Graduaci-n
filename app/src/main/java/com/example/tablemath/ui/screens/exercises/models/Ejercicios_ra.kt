@@ -120,6 +120,9 @@ class Ejercicios_ra {
                 a = a,
                 b = b,
                 progreso = progreso,
+                estudianteId = estudianteId,
+                tabla = tabla,
+                currentIndex = currentIndex,
                 onFinish = {
                     // Pasar al siguiente ejercicio
                     if (currentIndex + 1 < ejercicios.size) {
@@ -145,8 +148,12 @@ class Ejercicios_ra {
         a: Int,
         b: Int,
         progreso: Float,
+        estudianteId: String,
+        tabla: Int,
+        currentIndex: Int,
         onFinish: () -> Unit
     ) {
+        val db = Firebase.firestore
         var userInput by remember { mutableStateOf("") }
         var message by remember { mutableStateOf("") }
         var correct by remember { mutableStateOf(false) }
@@ -292,6 +299,21 @@ class Ejercicios_ra {
                             aciertoPlayer.setOnCompletionListener {
                                 it.release()
                             }
+                            
+                            // Guardar progreso
+                            val progreso = hashMapOf(
+                                "id_alumno" to estudianteId,
+                                "id_ejercicio" to "japones_tabla${tabla}_$currentIndex",
+                                "puntaje" to 1,
+                                "fecha" to System.currentTimeMillis()
+                            )
+                            db.collection("progreso").add(progreso)
+                                .addOnSuccessListener { documentReference ->
+                                    android.util.Log.d("Progreso", "Progreso japonés guardado con ID: ${documentReference.id}")
+                                }
+                                .addOnFailureListener { e ->
+                                    android.util.Log.e("Progreso", "Error al guardar progreso japonés", e)
+                                }
                         } else {
                             message = "❌ Intenta de nuevo"
                             val errorPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.error)
@@ -403,6 +425,9 @@ class Ejercicios_ra {
             ArabicStepByStep(
                 a = a,
                 b = b,
+                estudianteId = estudianteId,
+                tabla = tabla,
+                currentIndex = currentIndex,
                 onFinish = {
                     // Pasar al siguiente ejercicio
                     if (currentIndex + 1 < ejercicios.size) {
@@ -428,8 +453,12 @@ class Ejercicios_ra {
     fun ArabicStepByStep(
         a: Int,
         b: Int,
+        estudianteId: String,
+        tabla: Int,
+        currentIndex: Int,
         onFinish: () -> Unit
     ) {
+        val db = Firebase.firestore
         val aDigits = a.toString().map { it.toString().toInt() }
         val bDigits = b.toString().map { it.toString().toInt() }
 
@@ -672,6 +701,21 @@ class Ejercicios_ra {
                             aciertoPlayer.setOnCompletionListener {
                                 it.release()
                             }
+                            
+                            // Guardar progreso
+                            val progreso = hashMapOf(
+                                "id_alumno" to estudianteId,
+                                "id_ejercicio" to "arabe_tabla${tabla}_$currentIndex",
+                                "puntaje" to 1,
+                                "fecha" to System.currentTimeMillis()
+                            )
+                            db.collection("progreso").add(progreso)
+                                .addOnSuccessListener { documentReference ->
+                                    android.util.Log.d("Progreso", "Progreso árabe guardado con ID: ${documentReference.id}")
+                                }
+                                .addOnFailureListener { e ->
+                                    android.util.Log.e("Progreso", "Error al guardar progreso árabe", e)
+                                }
                         } else {
                             mensaje = "❌ Intenta de nuevo"
                             val errorPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.error)

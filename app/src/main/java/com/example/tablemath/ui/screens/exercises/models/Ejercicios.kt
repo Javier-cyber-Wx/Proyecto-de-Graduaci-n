@@ -178,6 +178,12 @@ class Ejercicios {
                                 "fecha" to System.currentTimeMillis()
                             )
                             db.collection("progreso").add(progreso)
+                                .addOnSuccessListener { documentReference ->
+                                    android.util.Log.d("Progreso", "Progreso guardado con ID: ${documentReference.id}")
+                                }
+                                .addOnFailureListener { e ->
+                                    android.util.Log.e("Progreso", "Error al guardar progreso", e)
+                                }
                         } else {
                             mensaje = "❌ Intenta de nuevo 😅"
                             val errorPlayer = MediaPlayer.create(context, R.raw.error)
@@ -433,6 +439,12 @@ class Ejercicios {
                                     "fecha" to System.currentTimeMillis()
                                 )
                                 db.collection("progreso").add(progreso)
+                                    .addOnSuccessListener { documentReference ->
+                                        android.util.Log.d("Progreso", "Progreso guardado con ID: ${documentReference.id}")
+                                    }
+                                    .addOnFailureListener { e ->
+                                        android.util.Log.e("Progreso", "Error al guardar progreso", e)
+                                    }
                             } else {
                                 mensaje = "❌ Resultado incorrecto"
                                 val errorPlayer = MediaPlayer.create(context, R.raw.error)
