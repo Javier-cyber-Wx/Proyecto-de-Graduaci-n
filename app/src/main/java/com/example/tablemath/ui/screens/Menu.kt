@@ -35,28 +35,49 @@ class Menu : ComponentActivity() {
             TableMathTheme {
                 MainMenuScreen(
                     onMetodoClick = { metodo ->
+                        val estudianteId = intent.getStringExtra("ESTUDIANTE_ID") ?: ""
                         when (metodo) {
                             "Clasico" -> {
-                                startActivity(Intent(this, Clasico::class.java))
+                                val intent = Intent(this, Clasico::class.java).apply {
+                                    putExtra("estudianteId", estudianteId)
+                                }
+                                startActivity(intent)
                             }
                             "Ruso" -> {
-                                startActivity(Intent(this, Ruso::class.java))
+                                val intent = Intent(this, Ruso::class.java).apply {
+                                    putExtra("estudianteId", estudianteId)
+                                }
+                                startActivity(intent)
                             }
                             "Japones" -> {
-                                startActivity(Intent(this, Japones::class.java))
+                                val intent = Intent(this, Japones::class.java).apply {
+                                    putExtra("estudianteId", estudianteId)
+                                }
+                                startActivity(intent)
                             }
                             "Arabe" -> {
-                                startActivity(Intent(this, Arabe::class.java))
+                                val intent = Intent(this, Arabe::class.java).apply {
+                                    putExtra("estudianteId", estudianteId)
+                                }
+                                startActivity(intent)
                             }
                         }
                     },
                     onProgresoClick = {
                         // Navegar a la pantalla de progreso
-                        startActivity(Intent(this, Progreso::class.java))
+                        val estudianteId = intent.getStringExtra("ESTUDIANTE_ID") ?: ""
+                        val intent = Intent(this, Progreso::class.java).apply {
+                            putExtra("estudianteId", estudianteId)
+                        }
+                        startActivity(intent)
                     },
                     onPerfilClick = {
                         // Navegar a la pantalla de perfil
-                        // startActivity(Intent(this, PerfilActivity::class.java))
+                        val estudianteId = intent.getStringExtra("ESTUDIANTE_ID") ?: ""
+                        val intent = Intent(this, Perfil::class.java).apply {
+                            putExtra("ESTUDIANTE_ID", estudianteId)
+                        }
+                        startActivity(intent)
                     }
                 )
             }

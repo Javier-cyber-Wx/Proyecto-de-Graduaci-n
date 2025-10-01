@@ -78,22 +78,29 @@ class Ejercicios {
         var ejercicios by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
         var currentIndex by remember { mutableStateOf(0) }
         var respuestaUsuario by remember { mutableStateOf("") }
-        var mensaje by remember { mutableStateOf("") }
         var cargando by remember { mutableStateOf(true) }
         var respuestaCorrecta by remember { mutableStateOf(false) }
+
+        var mensajeFeedback by remember { mutableStateOf("") } // Correcto / error
+        var mensajeTabla by remember { mutableStateOf("") }    // Tabla terminada
+        var tablaTerminada by remember { mutableStateOf(false) }
+
         val colorPrimario = Color(0xFF6C1AEF)
         val colorCorrecto = Color(0xFF4CAF50)
         val colorError = Color(0xFFE57373)
-        val colorFeedback = Color(0xFFFFC107)
-        // Animación del color del feedback
+
         val mensajeColor by animateColorAsState(
             targetValue = when {
                 respuestaCorrecta -> colorCorrecto
-                mensaje.contains("Intenta") -> colorError
-                else -> colorFeedback
+                mensajeFeedback.contains("Intenta") -> colorError
+                else -> colorPrimario
             },
             animationSpec = tween(500)
         )
+
+        val context = LocalContext.current
+
+        // --- Cargar ejercicios ---
         LaunchedEffect(Unit) {
             db.collection("ejercicios")
                 .document("clasico")
@@ -105,21 +112,16 @@ class Ejercicios {
                             val enunciado = ejercicio["enunciado"] as? String ?: ""
                             enunciado.startsWith("$tabla x")
                         }
-                        if (filtrados.isNotEmpty()) {
-                            ejercicios = filtrados
-                        } else {
-                            mensaje = "No se encontraron ejercicios para la tabla $tabla"
-                        }
-                    } else {
-                        mensaje = "No se encontraron ejercicios para clásico"
+                        ejercicios = filtrados
                     }
                     cargando = false
                 }
                 .addOnFailureListener { e ->
-                    mensaje = "Error al cargar ejercicios: ${e.message}"
+                    mensajeFeedback = "Error al cargar ejercicios: ${e.message}"
                     cargando = false
                 }
         }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -131,13 +133,13 @@ class Ejercicios {
             if (cargando) {
                 CircularProgressIndicator(color = colorPrimario)
             } else if (ejercicios.isEmpty()) {
-                Text(text = mensaje, color = Color.Red, fontSize = 18.sp)
+                Text(text = "No se encontraron ejercicios para la tabla $tabla", color = Color.Red, fontSize = 18.sp)
             } else {
                 val ejercicioActual = ejercicios[currentIndex]
                 val enunciado = ejercicioActual["enunciado"] as? String ?: "Error"
                 val respuestaCorrectaEsperada = (ejercicioActual["respuesta_correcta"] as? Long)?.toInt()
 
-                // 🔹 Enunciado
+                // --- Enunciado ---
                 Text(
                     text = enunciado,
                     fontSize = 32.sp,
@@ -146,7 +148,7 @@ class Ejercicios {
                 )
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 🔹 Caja de respuesta
+                // --- Caja de respuesta ---
                 OutlinedTextField(
                     value = respuestaUsuario,
                     onValueChange = { respuestaUsuario = it },
@@ -156,19 +158,17 @@ class Ejercicios {
                     textStyle = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Medium)
                 )
                 Spacer(modifier = Modifier.height(20.dp))
-                // 🔹 Botón verificar
-                val context = LocalContext.current
+
+                // --- Botón verificar ---
                 Button(
                     onClick = {
                         if (respuestaUsuario.toIntOrNull() == respuestaCorrectaEsperada) {
-                            mensaje = "🎉 ¡Correcto! Muy bien"
+                            mensajeFeedback = "🎉 ¡Correcto! Muy bien"
                             respuestaCorrecta = true
+
                             val aciertoPlayer = MediaPlayer.create(context, R.raw.finalizada)
                             aciertoPlayer.start()
-                            // Esperar a que termine el sonido antes de liberar recursos
-                            aciertoPlayer.setOnCompletionListener {
-                                it.release()
-                            }
+                            aciertoPlayer.setOnCompletionListener { it.release() }
 
                             // Guardar progreso
                             val progreso = hashMapOf(
@@ -178,41 +178,32 @@ class Ejercicios {
                                 "fecha" to System.currentTimeMillis()
                             )
                             db.collection("progreso").add(progreso)
-                                .addOnSuccessListener { documentReference ->
-                                    android.util.Log.d("Progreso", "Progreso guardado con ID: ${documentReference.id}")
-                                }
-                                .addOnFailureListener { e ->
-                                    android.util.Log.e("Progreso", "Error al guardar progreso", e)
-                                }
                         } else {
-                            mensaje = "❌ Intenta de nuevo 😅"
+                            mensajeFeedback = "❌ Intenta de nuevo 😅"
                             val errorPlayer = MediaPlayer.create(context, R.raw.error)
                             errorPlayer.start()
-                            // Esperar a que termine el sonido antes de liberar recursos
-                            errorPlayer.setOnCompletionListener {
-                                it.release()
-                            }
+                            errorPlayer.setOnCompletionListener { it.release() }
                         }
                     },
                     enabled = !respuestaCorrecta,
                     colors = ButtonDefaults.buttonColors(containerColor = colorPrimario),
                     shape = RoundedCornerShape(50),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
+                    modifier = Modifier.fillMaxWidth().height(60.dp)
                 ) {
                     Text("Verificar", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
-                // 🔹 Feedback
-                if (mensaje.isNotEmpty()) {
+
+                // --- Mensaje de feedback ---
+                if (mensajeFeedback.isNotEmpty()) {
                     Card(
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = mensajeColor),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = mensaje,
+                            text = mensajeFeedback,
                             modifier = Modifier.padding(16.dp),
                             color = Color.White,
                             fontSize = 20.sp,
@@ -221,33 +212,55 @@ class Ejercicios {
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // --- Botón siguiente / continuar ---
                 if (respuestaCorrecta) {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = {
-                            if (currentIndex < ejercicios.size - 1) {
-                                currentIndex++
-                                respuestaUsuario = ""
-                                mensaje = ""
-                                respuestaCorrecta = false
-                            } else {
-                                val mediaPlayer = MediaPlayer.create(context, R.raw.correcto)
-                                mediaPlayer.start()
-                                // Esperar a que termine el sonido antes de liberar recursos
-                                mediaPlayer.setOnCompletionListener {
-                                    it.release()
+                    if (!tablaTerminada) {
+                        Button(
+                            onClick = {
+                                if (currentIndex < ejercicios.size - 1) {
+                                    currentIndex++
+                                    respuestaUsuario = ""
+                                    mensajeFeedback = ""
+                                    respuestaCorrecta = false
+                                } else {
+                                    val mediaPlayer = MediaPlayer.create(context, R.raw.correcto)
+                                    mediaPlayer.start()
+                                    mediaPlayer.setOnCompletionListener { it.release() }
+
+                                    tablaTerminada = true
+                                    mensajeTabla = "🏆 ¡Terminaste la tabla $tabla!"
                                 }
-                                mensaje = "🏆 ¡Terminaste la tabla $tabla!"
-                                onFinish()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = colorCorrecto),
-                        shape = RoundedCornerShape(50),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(60.dp)
-                    ) {
-                        Text("➡️ Siguiente", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = colorCorrecto),
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier.fillMaxWidth().height(60.dp)
+                        ) {
+                            Text("➡️ Siguiente", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+                    } else {
+                        Button(
+                            onClick = { onFinish() },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier.fillMaxWidth().height(60.dp)
+                        ) {
+                            Text("Continuar", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // --- Mensaje de tabla terminada ---
+                        Text(
+                            text = mensajeTabla,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF6C1AEF),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }
@@ -265,6 +278,10 @@ class Ejercicios {
         var currentIndex by remember { mutableStateOf(0) }
         var cargando by remember { mutableStateOf(true) }
         var mensaje by remember { mutableStateOf("") }
+        var mensajePaso by remember { mutableStateOf("") }
+        var mensajeFeedback by remember { mutableStateOf("") }
+        var mensajeTabla by remember { mutableStateOf("") }
+        var tablaTerminada by remember { mutableStateOf(false) }
 
         var aActual by remember { mutableStateOf(0) }
         var bActual by remember { mutableStateOf(0) }
@@ -378,7 +395,6 @@ class Ejercicios {
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-
                     // --- Botón para avanzar paso ---
                     Button(
                         onClick = {
@@ -397,18 +413,29 @@ class Ejercicios {
 
                                 mitadInput = ""
                                 dobleInput = ""
+                                mensajePaso = "" // Limpiar mensaje de error
 
                                 if (aActual == 0) {
                                     esperandoResultadoFinal = true
                                 }
                             } else {
-                                mensaje = "❌ Mitad o doble incorrectos"
+                                mensajePaso = "❌ Mitad o doble incorrectos"
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = colorPrimario),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Verificar paso", color = Color.Black, fontSize = 20.sp)
+                    }
+
+                    if (mensajePaso.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = mensajePaso,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = colorError
+                        )
                     }
                 } else {
                     // --- Resultado final ---
@@ -422,16 +449,14 @@ class Ejercicios {
                     val context = LocalContext.current
                     Button(
                         onClick = {
-
                             if (resultadoInput.toIntOrNull() == resultadoFinal) {
-                                mensaje = "🎉 ¡Correcto! Resultado = $resultadoFinal"
+                                mensajeFeedback = "🎉 ¡Correcto! Resultado = $resultadoFinal"
                                 respuestaCorrecta = true
                                 val aciertoPlayer = MediaPlayer.create(context, R.raw.finalizada)
                                 aciertoPlayer.start()
-                                // Esperar a que termine el sonido antes de liberar recursos
-                                aciertoPlayer.setOnCompletionListener {
-                                    it.release()
-                                }
+                                aciertoPlayer.setOnCompletionListener { it.release() }
+
+                                // Guardar progreso
                                 val progreso = hashMapOf(
                                     "id_alumno" to estudianteId,
                                     "id_ejercicio" to "ruso_tabla${tabla}_$currentIndex",
@@ -439,72 +464,90 @@ class Ejercicios {
                                     "fecha" to System.currentTimeMillis()
                                 )
                                 db.collection("progreso").add(progreso)
-                                    .addOnSuccessListener { documentReference ->
-                                        android.util.Log.d("Progreso", "Progreso guardado con ID: ${documentReference.id}")
-                                    }
-                                    .addOnFailureListener { e ->
-                                        android.util.Log.e("Progreso", "Error al guardar progreso", e)
-                                    }
                             } else {
-                                mensaje = "❌ Resultado incorrecto"
+                                mensajeFeedback = "❌ Resultado incorrecto"
                                 val errorPlayer = MediaPlayer.create(context, R.raw.error)
                                 errorPlayer.start()
-                                // Esperar a que termine el sonido antes de liberar recursos
-                                errorPlayer.setOnCompletionListener {
-                                    it.release()
-                                }
+                                errorPlayer.setOnCompletionListener { it.release() }
                             }
                         },
                         enabled = !respuestaCorrecta,
                         colors = ButtonDefaults.buttonColors(containerColor = colorBoton),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Verificar resultado", color = Color.Black, fontSize = 20.sp)
+                        Text("Verificar resultado", color = Color.White, fontSize = 20.sp)
                     }
 
-                    if (respuestaCorrecta) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // --- Mensaje de feedback ---
+                    if (mensajeFeedback.isNotEmpty() && !tablaTerminada) {
+                        Text(
+                            text = mensajeFeedback,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (respuestaCorrecta) colorCorrecto else colorError
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                if (currentIndex < ejercicios.size - 1) {
-                                    currentIndex++
-                                    val siguiente = ejercicios[currentIndex]
-                                    aActual = (siguiente["a"] as Long).toInt()
-                                    bActual = (siguiente["b"] as Long).toInt()
-                                    pasosCompletados = listOf()
-                                    resultadoFinal = 0
-                                    mitadInput = ""
-                                    dobleInput = ""
-                                    resultadoInput = ""
-                                    esperandoResultadoFinal = false
-                                    respuestaCorrecta = false
-                                    mensaje = ""
-                                } else {
-                                    val mediaPlayer = MediaPlayer.create(context, R.raw.correcto)
-                                    mediaPlayer.start()
-                                    // Esperar a que termine el sonido antes de liberar recursos
-                                    mediaPlayer.setOnCompletionListener {
-                                        it.release()
+                    }
+
+                    // --- Botón siguiente / continuar ---
+                    if (respuestaCorrecta) {
+                        if (!tablaTerminada) {
+                            Button(
+                                onClick = {
+                                    if (currentIndex < ejercicios.size - 1) {
+                                        // Siguiente ejercicio
+                                        currentIndex++
+                                        val siguiente = ejercicios[currentIndex]
+                                        aActual = (siguiente["a"] as Long).toInt()
+                                        bActual = (siguiente["b"] as Long).toInt()
+                                        pasosCompletados = listOf()
+                                        resultadoFinal = 0
+                                        mitadInput = ""
+                                        dobleInput = ""
+                                        resultadoInput = ""
+                                        esperandoResultadoFinal = false
+                                        respuestaCorrecta = false
+                                        mensajeFeedback = ""
+                                    } else {
+                                        // Último ejercicio
+                                        val mediaPlayer = MediaPlayer.create(context, R.raw.correcto)
+                                        mediaPlayer.start()
+                                        mediaPlayer.setOnCompletionListener { it.release() }
+
+                                        tablaTerminada = true
+                                        mensajeTabla = "🏆 ¡Terminaste la tabla $tabla!"
                                     }
-                                    mensaje = "🏆 ¡Terminaste la tabla $tabla!"
-                                    onFinish()
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = colorCorrecto),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Siguiente ejercicio", color = Color.Black, fontSize = 20.sp)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = colorCorrecto),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Siguiente ejercicio", color = Color.White, fontSize = 20.sp)
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { onFinish() },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Continuar", color = Color.White, fontSize = 20.sp)
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // --- Mensaje de tabla terminada ---
+                            Text(
+                                text = mensajeTabla,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF6C1AEF),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                if (mensaje.isNotEmpty()) {
-                    Text(
-                        text = mensaje,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (respuestaCorrecta) colorCorrecto else colorError
-                    )
                 }
             }
         }
