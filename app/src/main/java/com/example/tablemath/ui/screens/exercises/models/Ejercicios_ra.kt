@@ -1,9 +1,7 @@
 package com.example.tablemath.ui.screens.exercises.models
 
 import android.media.MediaPlayer
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -49,9 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.delay
@@ -72,11 +67,9 @@ class Ejercicios_ra {
         var mensaje by remember { mutableStateOf("") }
         var tablaTerminada by remember { mutableStateOf(false) }
 
-        // Datos del ejercicio actual
         var a by remember { mutableStateOf(0) }
         var b by remember { mutableStateOf(0) }
 
-        // --- Cargar ejercicios desde Firestore ---
         LaunchedEffect(Unit) {
             db.collection("ejercicios")
                 .document("japones")
@@ -142,7 +135,7 @@ class Ejercicios_ra {
                     }
                 },
                 onFinish = {
-                    onFinish() // ✅ Aquí ya llamas al callback del padre
+                    onFinish()
                 }
             )
 
@@ -168,7 +161,6 @@ class Ejercicios_ra {
 
         val totalIntersections = a * b
 
-        // Animación de aparición de intersecciones
         LaunchedEffect(a, b) {
             userInput = ""
             message = ""
@@ -228,7 +220,6 @@ class Ejercicios_ra {
                     val lineA = mutableListOf<Pair<Offset, Offset>>()
                     val lineB = mutableListOf<Pair<Offset, Offset>>()
 
-                    // Líneas ↘ (azules)
                     for (i in 1..a) {
                         val y = topMargin + i * spacingA
                         val start = Offset(0f, y)
@@ -237,7 +228,6 @@ class Ejercicios_ra {
                         drawLine(color = Color(0xFF2196F3), start = start, end = end, strokeWidth = 4f)
                     }
 
-                    // Líneas ↙ (rojas)
                     for (j in 1..b) {
                         val y = topMargin + j * spacingB
                         val start = Offset(size.width, y)
@@ -246,7 +236,6 @@ class Ejercicios_ra {
                         drawLine(color = Color(0xFFF44336), start = start, end = end, strokeWidth = 4f)
                     }
 
-                    // Puntos de intersección animados
                     var index = 0
                     for ((startA, endA) in lineA) {
                         for ((startB, endB) in lineB) {
@@ -261,7 +250,6 @@ class Ejercicios_ra {
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Barra de progreso debajo del canvas ---
             LinearProgressIndicator(
                 progress = progreso,
                 modifier = Modifier
@@ -281,6 +269,54 @@ class Ejercicios_ra {
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF6C1AEF)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Explicación del método japonés ---
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "📚 ¿Cómo funciona el método japonés?",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1976D2)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "1️⃣ Observa las $a líneas diagonales hacia la derecha (↘)",
+                        fontSize = 14.sp,
+                        color = Color(0xFF424242)
+                    )
+                    Text(
+                        text = "2️⃣ Observa $b líneas diagonales hacia la izquierda (↙)",
+                        fontSize = 14.sp,
+                        color = Color(0xFF424242)
+                    )
+                    Text(
+                        text = "3️⃣ Cuenta los puntos donde se cruzan las líneas",
+                        fontSize = 14.sp,
+                        color = Color(0xFF424242)
+                    )
+                    Text(
+                        text = "4️⃣ El número de cruces es el resultado: $a × $b",
+                        fontSize = 14.sp,
+                        color = Color(0xFF424242)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "💡 Observa las líneas azules (↘) y rojas (↙) en el dibujo de arriba",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF1976D2)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -324,7 +360,6 @@ class Ejercicios_ra {
                     Text("Comprobar", color = Color.White)
                 }
             } else {
-                // ✅ Respuesta correcta pero todavía no terminó la tabla
                 if (!tablaTerminada) {
                     Button(
                         onClick = { onNext() },
@@ -397,7 +432,6 @@ class Ejercicios_ra {
         var a by remember { mutableStateOf(0) }
         var b by remember { mutableStateOf(0) }
 
-        // --- Cargar ejercicios desde Firestore ---
         LaunchedEffect(Unit) {
             db.collection("ejercicios")
                 .document("arabe")
@@ -436,9 +470,6 @@ class Ejercicios_ra {
         } else if (ejercicios.isEmpty()) {
             Text(text = mensaje, color = Color.Red, fontSize = 18.sp)
         } else {
-            // --- Ejercicio paso a paso ---
-            val context = LocalContext.current
-
             ArabicStepByStep(
                 a = a,
                 b = b,
@@ -447,7 +478,6 @@ class Ejercicios_ra {
                 currentIndex = currentIndex,
                 tablaTerminada,
                 onNext = {
-                    // Pasar al siguiente ejercicio
                     if (currentIndex + 1 < ejercicios.size) {
                         currentIndex++
                         val siguiente = ejercicios[currentIndex]
@@ -491,7 +521,6 @@ class Ejercicios_ra {
         var resultadoFinal by remember { mutableStateOf("") }
         var celdaActiva by remember { mutableStateOf<Pair<Int, Int>?>(null) }
 
-        // Animación paso a paso
         LaunchedEffect(a, b) {
             showCells = 0
             showDiagonals = false
@@ -564,7 +593,6 @@ class Ejercicios_ra {
             )
 
             Column {
-                // Fila superior con los dígitos de 'a'
                 Row(modifier = Modifier.padding(start = 60.dp)) {
                     for (digit in aDigits) {
                         Box(
@@ -585,12 +613,9 @@ class Ejercicios_ra {
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
-
-                // Cuadrícula con columna izquierda
                 var cellIndex = 0
                 for (i in bDigits.indices) {
                     Row {
-                        // Dígito de 'b' al inicio de la fila
                         Box(
                             modifier = Modifier
                                 .size(60.dp)
@@ -606,7 +631,6 @@ class Ejercicios_ra {
                         }
                         Spacer(modifier = Modifier.width(6.dp))
 
-                        // Celdas de la cuadrícula
                         for (j in aDigits.indices) {
                             val multiplicando = aDigits[j]
                             val multiplicador = bDigits[i]
@@ -717,8 +741,6 @@ class Ejercicios_ra {
                             aciertoPlayer.setOnCompletionListener {
                                 it.release()
                             }
-
-                            // Guardar progreso
                             val progreso = hashMapOf(
                                 "id_alumno" to estudianteId,
                                 "id_ejercicio" to "arabe_tabla${tabla}_$currentIndex",
@@ -761,7 +783,6 @@ class Ejercicios_ra {
             if (tablaTerminada) {
                 val context = LocalContext.current
                 if (!sonidoReproducido) {
-                    // Reproducir sonido solo una vez
                     val mediaPlayer = MediaPlayer.create(context, com.example.tablemath.R.raw.correcto)
                     mediaPlayer.start()
                     mediaPlayer.setOnCompletionListener { it.release() }

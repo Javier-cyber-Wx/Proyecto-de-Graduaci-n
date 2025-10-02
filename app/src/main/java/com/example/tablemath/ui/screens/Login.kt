@@ -88,7 +88,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF80DEEA)),
+            .background(Color(0xFF42A5F5)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -119,7 +119,7 @@ fun LoginScreen(
 
             Button(
                 onClick = { onLoginClick(codigoEstudiante) },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp),

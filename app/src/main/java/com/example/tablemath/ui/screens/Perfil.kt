@@ -1,37 +1,24 @@
 package com.example.tablemath.ui.screens
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import com.example.tablemath.data.model.Estudiante
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tablemath.ui.screens.ui.theme.TableMathTheme
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -46,14 +33,19 @@ class Perfil : ComponentActivity() {
             TableMathTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFFF5F5F5) // fondo gris claro
+                    color = Color(0xFFF5F5F5)
                 ) {
                     val uid = auth.currentUser?.uid
                     if (uid != null) {
                         PerfilScreen(
                             uid = uid,
                             onLogout = {
-                                startActivity(Intent(this, Login::class.java))
+                                // Limpiar el stack de actividades y navegar a Bienvenida
+                                val intent = Intent(this, Bienvenida::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                }
+                                startActivity(intent)
+                                finishAffinity() // Cierra todas las actividades del stack
                             }
                         )
                     } else {

@@ -148,6 +148,48 @@ class Ejercicios {
                 )
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // --- Explicación del método clásico ---
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "📚 ¿Cómo funciona el método clásico?",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1976D2)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "1️⃣ Recuerda las tablas de multiplicar",
+                            fontSize = 14.sp,
+                            color = Color(0xFF424242)
+                        )
+                        Text(
+                            text = "2️⃣ Multiplica directamente los números",
+                            fontSize = 14.sp,
+                            color = Color(0xFF424242)
+                        )
+                        Text(
+                            text = "3️⃣ El resultado es la multiplicación simple",
+                            fontSize = 14.sp,
+                            color = Color(0xFF424242)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "💡 Es el método más conocido y directo para multiplicar",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF1976D2)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+
                 // --- Caja de respuesta ---
                 OutlinedTextField(
                     value = respuestaUsuario,
@@ -355,6 +397,53 @@ class Ejercicios {
                     fontWeight = FontWeight.Bold,
                     color = colorPrimario
                 )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // --- Explicación del método ruso ---
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "📚 ¿Cómo funciona el método ruso?",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1976D2)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "1️⃣ Divide el primer número por 2 (mitad)",
+                            fontSize = 14.sp,
+                            color = Color(0xFF424242)
+                        )
+                        Text(
+                            text = "2️⃣ Multiplica el segundo número por 2 (doble)",
+                            fontSize = 14.sp,
+                            color = Color(0xFF424242)
+                        )
+                        Text(
+                            text = "3️⃣ Si el primer número es impar, suma el segundo número al resultado",
+                            fontSize = 14.sp,
+                            color = Color(0xFF424242)
+                        )
+                        Text(
+                            text = "4️⃣ Repite hasta que el primer número sea 0",
+                            fontSize = 14.sp,
+                            color = Color(0xFF424242)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "💡 Ejemplo: $aInicial × $bInicial = ?",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF1976D2)
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // --- Tabla de pasos ---

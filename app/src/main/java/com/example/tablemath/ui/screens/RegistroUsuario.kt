@@ -98,7 +98,7 @@ class RegistroUsuario : ComponentActivity() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF66BB6A)),
+                .background(Color(0xFF42A5F5)),
             contentAlignment = Alignment.Center
         )
         {
@@ -164,7 +164,7 @@ class RegistroUsuario : ComponentActivity() {
                 //Boton para registrarse
                 Button(
                     onClick = { onRegisterClick(nombre, apellido, grado, pin) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
                     shape = RoundedCornerShape(30.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
